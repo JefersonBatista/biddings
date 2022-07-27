@@ -1,9 +1,6 @@
 package com.github.jb.biddings.controllers;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.jsoup.Jsoup;
 import org.springframework.web.bind.annotation.GetMapping;

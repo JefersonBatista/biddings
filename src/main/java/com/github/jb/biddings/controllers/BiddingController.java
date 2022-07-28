@@ -1,6 +1,7 @@
 package com.github.jb.biddings.controllers;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -8,11 +9,17 @@ import org.jsoup.nodes.Element;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.jb.biddings.entities.Bidding;
+
 @RestController
 public class BiddingController {
   private final String website = "https://www.siga.es.gov.br/sgc/faces/pub/sgc/central/EditalPageList.jsp";
   private final String tableId = "form_EditalPageList:listaDataTable:tbody_element";
   private final String tableCellIdFormat = "form_EditalPageList:listaDataTable:%d:lb%s";
+  private final String[] columnNames = { "DataAbertura", "Orgao", "NumeroProcesso", "NumeroEdital", "Objeto",
+      "Modalidade" };
 
   @GetMapping("/biddings")
   public String showBiddings() {
@@ -25,26 +32,36 @@ public class BiddingController {
 
     Element biddingTable = doc.getElementById(tableId);
 
-    String result = "";
+    Bidding[] biddings = getBiddings(biddingTable);
 
-    result += getColumnLines(biddingTable, "DataAbertura");
-    result += getColumnLines(biddingTable, "Orgao");
-    result += getColumnLines(biddingTable, "NumeroProcesso");
-    result += getColumnLines(biddingTable, "NumeroEdital");
-    result += getColumnLines(biddingTable, "Objeto");
-    result += getColumnLines(biddingTable, "Modalidade");
-
-    return result;
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.writeValueAsString(Arrays.asList(biddings));
+    } catch (JsonProcessingException e) {
+      return "Erro ao processar a resposta!";
+    }
   }
 
-  private String getColumnLines(Element biddingTable, String columnName) {
-    String result = String.format("Coluna: %s\n", columnName);
+  private String getCellData(Element biddingTable, int lineNumber, String columnName) {
+    String cellId = String.format(tableCellIdFormat, lineNumber, columnName);
+    return biddingTable.getElementById(cellId).text();
+  }
 
-    for (int i = 0; i < 10; i++) {
-      String cellId = String.format(tableCellIdFormat, i, columnName);
-      result += biddingTable.getElementById(cellId).text() + "\n";
+  private Bidding[] getBiddings(Element biddingTable) {
+    int numBiddings = 10;
+    Bidding[] biddings = new Bidding[numBiddings];
+
+    for (int i = 0; i < numBiddings; i++) {
+      String dataAbertura = getCellData(biddingTable, i, columnNames[0]);
+      String orgao = getCellData(biddingTable, i, columnNames[1]);
+      String numeroProcesso = getCellData(biddingTable, i, columnNames[2]);
+      String numeroEdital = getCellData(biddingTable, i, columnNames[3]);
+      String objeto = getCellData(biddingTable, i, columnNames[4]);
+      String modalidade = getCellData(biddingTable, i, columnNames[5]);
+
+      biddings[i] = new Bidding(dataAbertura, orgao, numeroProcesso, numeroEdital, objeto, modalidade);
     }
 
-    return result + "\n";
+    return biddings;
   }
 }

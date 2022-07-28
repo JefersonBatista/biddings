@@ -1,7 +1,6 @@
 package com.github.jb.biddings.controllers;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,26 +10,41 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class BiddingController {
+  private final String website = "https://www.siga.es.gov.br/sgc/faces/pub/sgc/central/EditalPageList.jsp";
+  private final String tableId = "form_EditalPageList:listaDataTable:tbody_element";
+  private final String tableCellIdFormat = "form_EditalPageList:listaDataTable:%d:lb%s";
+
   @GetMapping("/biddings")
   public String showBiddings() {
-    String url = "https://www.siga.es.gov.br/sgc/faces/pub/sgc/central/EditalPageList.jsp";
-
     Document doc;
     try {
-      doc = Jsoup.connect(url).get();
+      doc = Jsoup.connect(website).get();
     } catch (IOException e) {
       return "Site is down!";
     }
 
-    String biddingTableId = "form_EditalPageList:listaDataTable:tbody_element";
-    Element biddingTable = doc.getElementById(biddingTableId);
+    Element biddingTable = doc.getElementById(tableId);
 
-    String processNumbers = "";
+    String result = "";
+
+    result += getColumnLines(biddingTable, "DataAbertura");
+    result += getColumnLines(biddingTable, "Orgao");
+    result += getColumnLines(biddingTable, "NumeroProcesso");
+    result += getColumnLines(biddingTable, "NumeroEdital");
+    result += getColumnLines(biddingTable, "Objeto");
+    result += getColumnLines(biddingTable, "Modalidade");
+
+    return result;
+  }
+
+  private String getColumnLines(Element biddingTable, String columnName) {
+    String result = String.format("Coluna: %s\n", columnName);
+
     for (int i = 0; i < 10; i++) {
-      String processNumberIdFormat = "form_EditalPageList:listaDataTable:%d:lbNumeroProcesso";
-      String processNumberId = String.format(processNumberIdFormat, i);
-      processNumbers += biddingTable.getElementById(processNumberId).text() + "\n";
+      String cellId = String.format(tableCellIdFormat, i, columnName);
+      result += biddingTable.getElementById(cellId).text() + "\n";
     }
-    return processNumbers;
+
+    return result + "\n";
   }
 }

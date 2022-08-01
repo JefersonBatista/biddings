@@ -58,4 +58,12 @@ public class BiddingService {
 
     return biddings;
   }
+
+  public static void markAsRead(int id) {
+    BiddingRepository.markAsRead(id);
+  }
+
+  public static void markAsUnread(int id) {
+    BiddingRepository.markAsUnread(id);
+  }
 }

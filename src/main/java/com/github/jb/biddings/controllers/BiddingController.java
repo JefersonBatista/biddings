@@ -3,6 +3,8 @@ package com.github.jb.biddings.controllers;
 import java.util.Arrays;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,4 +25,15 @@ public class BiddingController {
       return "Erro ao processar a resposta!";
     }
   }
+
+  @PatchMapping("/biddings/{id}/read")
+  public static void markAsRead(@PathVariable int id) {
+    BiddingService.markAsRead(id);
+  }
+
+  @PatchMapping("/biddings/{id}/unread")
+  public static void markAsUnread(@PathVariable int id) {
+    BiddingService.markAsUnread(id);
+  }
+
 }

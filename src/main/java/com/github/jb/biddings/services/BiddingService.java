@@ -1,10 +1,10 @@
 package com.github.jb.biddings.services;
 
-import java.io.IOException;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.github.jb.biddings.entities.Bidding;
 import com.github.jb.biddings.repositories.BiddingRepository;
@@ -22,12 +22,14 @@ public class BiddingService {
       return biddings;
     }
 
-    Document doc;
-    try {
-      doc = Jsoup.connect(website).get();
-    } catch (IOException e) {
-      return null;
-    }
+    String firefoxDriverPath = "drivers/geckodriver";
+    System.setProperty("webdriver.gecko.driver", firefoxDriverPath);
+
+    WebDriver driver = new FirefoxDriver();
+    driver.get(website);
+    String pageSource = driver.getPageSource();
+
+    Document doc = Jsoup.parse(pageSource);
 
     Element biddingTable = doc.getElementById(tableId);
 

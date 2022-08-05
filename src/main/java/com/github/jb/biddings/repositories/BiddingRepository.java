@@ -1,27 +1,34 @@
 package com.github.jb.biddings.repositories;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.jb.biddings.entities.Bidding;
 
 public class BiddingRepository {
-  private static Bidding[] biddings = null;
+  private static List<Bidding> biddings = new ArrayList<>();
 
-  public static Bidding[] getBiddings() {
+  public static List<Bidding> getBiddings() {
     return biddings;
   }
 
-  public static void setBiddings(Bidding[] biddings) {
+  public static void setBiddings(List<Bidding> biddings) {
     BiddingRepository.biddings = biddings;
   }
 
+  public static void addBiddings(List<Bidding> biddings) {
+    BiddingRepository.biddings.addAll(biddings);
+  }
+
   public static void markAsRead(int id) {
-    if (id <= biddings.length) {
-      biddings[id - 1].setLida(true);
+    if (id <= biddings.size()) {
+      biddings.get(id - 1).setLida(true);
     }
   }
 
   public static void markAsUnread(int id) {
-    if (id <= biddings.length) {
-      biddings[id - 1].setLida(false);
+    if (id <= biddings.size()) {
+      biddings.get(id - 1).setLida(false);
     }
   }
 }

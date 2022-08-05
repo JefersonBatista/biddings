@@ -1,6 +1,6 @@
 package com.github.jb.biddings.controllers;
 
-import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,11 +16,11 @@ import com.github.jb.biddings.services.BiddingService;
 public class BiddingController {
   @GetMapping("/biddings")
   public static String showBiddings() {
-    Bidding[] biddings = BiddingService.getBiddings();
+    List<Bidding> biddings = BiddingService.getBiddings();
 
     ObjectMapper objectMapper = new ObjectMapper();
     try {
-      return objectMapper.writeValueAsString(Arrays.asList(biddings));
+      return objectMapper.writeValueAsString(biddings);
     } catch (JsonProcessingException e) {
       return "Erro ao processar a resposta!";
     }

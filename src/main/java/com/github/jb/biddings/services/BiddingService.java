@@ -2,7 +2,6 @@ package com.github.jb.biddings.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,29 +28,31 @@ public class BiddingService {
       return biddings;
     }
 
-    String firefoxDriverPath = "drivers/geckodriver";
-    System.setProperty("webdriver.gecko.driver", firefoxDriverPath);
-
     WebDriver driver = new FirefoxDriver();
     driver.get(website);
 
+    int numPages = 10;
+    for (int i = 0; i < numPages; i++) {
+      List<Bidding> pageBiddings = getPageBiddings(driver);
+      BiddingRepository.addBiddings(pageBiddings);
+      goToNextPage(driver);
+    }
+
+    biddings = BiddingRepository.getBiddings();
+    return biddings;
+  }
+
+  private static List<Bidding> getPageBiddings(WebDriver driver) {
     String pageSource = driver.getPageSource();
     Document doc = Jsoup.parse(pageSource);
     Element biddingTable = doc.getElementById(tableId);
     List<Bidding> pageBiddings = getBiddingsData(biddingTable);
-    BiddingRepository.addBiddings(pageBiddings);
+    return pageBiddings;
+  }
 
+  private static void goToNextPage(WebDriver driver) {
     WebElement buttonNext = driver.findElement(By.id(buttonNextId));
     buttonNext.click();
-
-    pageSource = driver.getPageSource();
-    doc = Jsoup.parse(pageSource);
-    biddingTable = doc.getElementById(tableId);
-    pageBiddings = getBiddingsData(biddingTable);
-    BiddingRepository.addBiddings(pageBiddings);
-
-    biddings = BiddingRepository.getBiddings();
-    return biddings;
   }
 
   private static String getCellData(Element biddingTable, int lineIndex, String columnName) {
@@ -63,7 +64,7 @@ public class BiddingService {
     List<Bidding> biddings = new ArrayList<>();
 
     int numLines = biddingTable.childrenSize();
-    IntStream.range(0, numLines).forEach(index -> {
+    for (int index = 0; index < numLines; index++) {
       String dataAbertura = getCellData(biddingTable, index, columnNames[0]);
       String orgao = getCellData(biddingTable, index, columnNames[1]);
       String numeroProcesso = getCellData(biddingTable, index, columnNames[2]);
@@ -72,7 +73,8 @@ public class BiddingService {
       String modalidade = getCellData(biddingTable, index, columnNames[5]);
 
       biddings.add(new Bidding(dataAbertura, orgao, numeroProcesso, numeroEdital, objeto, modalidade));
-    });
+    }
+    ;
 
     return biddings;
   }
